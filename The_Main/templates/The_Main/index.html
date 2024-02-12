@@ -1,0 +1,16 @@
+{% extends "The_Main/base.html" %}
+
+{% block title %}
+Wiki Thing Title
+{% endblock %}
+
+{% block content %}
+    <h1>Danbooru Images</h1>
+    <div class="image">
+        {% for image in danbooru_data %}
+            {% if image.file_url|lower|slice:"-3:" == "png" or image.file_url|lower|slice:"-3:" == "jpg" %}
+                <img src="{% url 'proxy_image' image.file_url %}" alt="Image">
+            {% endif %}
+        {% endfor %}
+    </div>
+{% endblock %}

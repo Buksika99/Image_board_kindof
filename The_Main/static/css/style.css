@@ -1,0 +1,146 @@
+.sidenav {
+    height: 100%;
+    width: 10%;
+    position: fixed;
+    z-index: 1;
+    top: 0;
+    left: 0;
+    background-color: crimson;
+    overflow-x: hidden;
+    padding-top: 20px;
+}
+
+.sidenav a {
+padding: 6px 8px 6px 16px;
+text-decoration: none;
+font-size: 25px;
+color: #000000;
+display: block;
+}
+
+.sidenav a:hover{
+color: #003cff;
+}
+
+.sidenav input[type="text"] {
+    width: 80%; /* Adjust width as needed */
+    padding: 8px; /* Adjust padding as needed */
+    margin-left: 7%;
+    font-size: 16px; /* Adjust font size as needed */
+    margin-bottom: -2%; /* Adjust margin-bottom as needed */
+    border: none;
+    border-radius: 5px;
+    background-color: #fff; /* Background color for the input field */
+}
+
+.sidenav button{
+    margin-left: 7%;
+    margin-top: -5%;
+}
+
+.main{
+    margin-left: 10%;
+    padding: 1px 10px;
+}
+
+.image img {
+    width: 70%; /* Set your desired constant width here */
+    height: auto; /* This will maintain the aspect ratio */
+    display: block; /* Ensure images are displayed as block elements */
+    margin-bottom: 10px; /* Add margin between images */
+}
+
+
+.secluded-box {
+    position: absolute;
+    top: 50px; /* Adjust the top position as needed */
+    right: 10px;
+    background-color: #f0f0f0;
+    padding: 20px;
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+
+.secluded-box img {
+    width: auto; /* Adjust the image width as needed */
+    height: 500px;
+    display: block;
+    margin: 0 auto 10px; /* Center the image horizontally */
+}
+
+
+.image-inside_secluded_box img {
+    width: 200px;
+    height: auto;
+}
+
+.lightbox {
+    display: none;
+    position: fixed;
+    z-index: 9999;
+    padding-top: 50px;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: transparent;
+}
+
+
+.lightbox-content {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    max-width: 80vw;
+    max-height: 95%;
+    margin: auto; /* Center the content horizontally and vertically */
+}
+
+.lightbox-overlay {
+    display: none;
+    position: fixed;
+    z-index: 9998;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+}
+
+
+
+.lightbox.show {
+    display: block;
+}
+
+
+.lightbox-overlay.show {
+    display: block;
+}
+
+.close {
+    color: #fff;
+    position: absolute;
+    top: 10px;
+    right: 25px;
+    font-size: 36px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.close:hover,
+.close:focus {
+    color: #ccc;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+
+/*.enlarged {*/
+/*    !* Define the enlarged size properties *!*/
+/*    !* For example: *!*/
+/*    transform: scale(3.2);*/
+/*    transition: transform 0.3s ease;*/
+/*}*/

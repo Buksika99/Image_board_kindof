@@ -1,0 +1,9 @@
+{
+  "compilerOptions": {
+    "target": "es5",
+    "outDir": "./The_Main/static/js",
+    "rootDir": "./The_Main/static/ts",
+    "strict": true
+  }
+}
+
