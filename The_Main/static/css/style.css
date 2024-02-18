@@ -52,6 +52,9 @@ color: #003cff;
 
 
 .secluded-box {
+    height: 90vh;
+    width: 20vw;
+    overflow: auto;
     position: absolute;
     top: 50px; /* Adjust the top position as needed */
     right: 10px;
@@ -59,6 +62,19 @@ color: #003cff;
     padding: 20px;
     border-radius: 5px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+
+.user_info {
+    position: absolute;
+    top: 5px;
+    width: 20vw;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    right: 10px;
+    background-color: #f0f0f0;
+    padding: 5px;
+    border-radius: 5px;
+    padding-bottom: 15px;
 }
 
 
@@ -136,6 +152,9 @@ color: #003cff;
     text-decoration: none;
     cursor: pointer;
 }
+
+
+
 
 
 /*.enlarged {*/

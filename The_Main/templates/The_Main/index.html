@@ -5,7 +5,13 @@ Wiki Thing Title
 {% endblock %}
 
 {% block content %}
-    <h1>Danbooru Images</h1>
+
+{#    <style>#}
+{#        .secluded-box {#}
+{#            background-color: #ff0000; /* Example. */#}
+{#        }#}
+{#    </style>#}
+    <h1>{{ character_name }}</h1>
     <div class="image">
         {% for image in danbooru_data %}
             {% if image.file_url|lower|slice:"-3:" == "png" or image.file_url|lower|slice:"-3:" == "jpg" %}
@@ -13,4 +19,6 @@ Wiki Thing Title
             {% endif %}
         {% endfor %}
     </div>
+
+
 {% endblock %}

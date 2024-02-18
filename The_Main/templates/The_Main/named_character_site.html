@@ -1,0 +1,34 @@
+{% extends "The_Main/base.html" %}
+
+{% block title %}
+Wiki Thing Title
+{% endblock %}
+
+{% block content %}
+    <style>
+        .secluded-box {
+            background-color: #ff0000; /* Example. */
+        }
+    </style>
+
+    <h1>{{ character_name }}</h1>
+{#    <p>Database stuff like Trivia, age goes here</p>#}
+{% endblock %}
+{% block secluded_box_content %}
+
+<div class="secluded-box">
+    <!-- Secluded box content -->
+    <img src="{% url 'proxy_for_static_image' 'https://cdn.donmai.us/sample/12/8c/__keqing_genshin_impact_drawn_by_cokecoco__sample-128cdff55cec944f4bd5af3faa176150.jpg' %}" alt="Secluded Box Image">
+    <p>Some text beneath the image</p>
+
+    <div class="image-inside_secluded_box">
+        {% for image in character_data %}
+            {% if image.file_url|lower|slice:"-3:" == "png" or image.file_url|lower|slice:"-3:" == "jpg" %}
+                <img src="{% url 'proxy_image' image.file_url %}" alt="Image" class="lightbox-trigger">
+            {% endif %}
+        {% endfor %}
+    </div>
+</div>
+
+{% endblock %}
+

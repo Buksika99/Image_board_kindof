@@ -1,0 +1,21 @@
+{% extends "The_Main/base.html" %}
+
+{% block title %}Add a Character{% endblock %}
+
+{% load crispy_forms_tags %}
+
+{% block form_thing %}
+{% endblock %}
+
+
+{% block content %}
+
+    <h1>Create Character</h1>
+
+    <form method="post">
+        {% csrf_token %}
+        {{ character_form|crispy }}
+        <button type="submit">Save</button>
+    </form>
+
+{% endblock %}

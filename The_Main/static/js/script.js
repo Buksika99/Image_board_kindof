@@ -47,5 +47,33 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
+    lightbox.addEventListener('click', function (event) {
+        if (!event.target.closest('.lightbox-content')) {
+            closeLightbox();
+        }
+    });
+
     lightboxContent.addEventListener('click', toggleZoom);
+
+    function isAtBottomOfSecludedBox() {
+    const secludedBox = document.querySelector('.secluded-box');
+    if (!secludedBox) return false; // Return false if the secluded box is not found
+    return secludedBox.scrollTop + secludedBox.clientHeight >= secludedBox.scrollHeight;
+}
+
+    // Function to handle scrolling event for the secluded box
+    function handleSecludedBoxScroll() {
+        if (isAtBottomOfSecludedBox()) {
+            console.log("You have reached the bottom of the secluded box!");
+        }
+    }
+
+    // Add event listener for scroll event on the secluded box
+    const secludedBox = document.querySelector('.secluded-box');
+    if (secludedBox) {
+        secludedBox.addEventListener('scroll', handleSecludedBoxScroll);
+    } else {
+        console.error("Secluded box not found!");
+}
 });
+
