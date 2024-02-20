@@ -25,19 +25,20 @@ DANBOORU_API_URL = "https://danbooru.donmai.us/posts.json"
 
 
 def index(request, tag_name=None):
+    page_number = request.GET.get('page', 1)  # Get page number from query parameters, default to 1
     if request.method == 'POST':
         search_form = SearchForm(request.POST)
         if search_form.is_valid():
             search_text = search_form.cleaned_data['searchText']
             danbooru_data = get_images(request, search_text=search_text)
-            secluded_data = get_default_secluded_box_images(request)
+            secluded_data = get_default_secluded_box_images(request, page=page_number)
         else:
             danbooru_data = get_images(request)
-            secluded_data = get_default_secluded_box_images(request)
+            secluded_data = get_default_secluded_box_images(request, page=page_number)
     else:
         search_form = SearchForm()
         danbooru_data = get_images(request, tag_name=tag_name)
-        secluded_data = get_default_secluded_box_images(request)
+        secluded_data = get_default_secluded_box_images(request, page=page_number)
 
     path = request.path
     page_name = path.rsplit('/', 1)[-1]
@@ -46,6 +47,7 @@ def index(request, tag_name=None):
     return render(request, 'The_Main/index.html',
                   {'danbooru_data': danbooru_data, 'secluded_data': secluded_data, 'search_form': search_form,
                    'character_name': character_name.title()})
+
 
 
 def named_character_site(request, character):
@@ -81,7 +83,7 @@ def get_images(request, **kwargs):
     else:
         params = {
             'tags': f"{tag_name} rating:s -nude",
-            'limit': 15
+            'limit': 5
         }
 
     if request.method == 'POST':
@@ -153,7 +155,7 @@ def get_default_secluded_box_images(request, **kwargs):
 
     params = {
         'tags': character,
-        'limit': 15,
+        'limit': 5,
         'page': page
     }
 
