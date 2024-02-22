@@ -8,4 +8,4 @@ class SearchForm(forms.Form):
 class CharacterForm(forms.ModelForm):
     class Meta:
         model = Character
-        fields = ['name', 'default_image', 'trivia', 'age', 'ability', 'hair', 'eye_color']
+        fields = ['name', 'trivia', 'age', 'ability', 'hair', 'eye_color']

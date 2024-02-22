@@ -4,7 +4,7 @@ import requests
 from .forms import SearchForm, CharacterForm
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import user_passes_test
-import json
+from .models import Character
 
 def admin_required(user):
     is_admin = user.is_authenticated and user.is_staff
@@ -171,15 +171,18 @@ def get_default_secluded_box_images(request, **kwargs):
 
 
 def characters(request):
-    # Determine the category based on the URL name
     category = None
-    character_names = ""
+    character_names = []
+
+    # Fetch character names based on the URL name
     if request.resolver_match.url_name == 'anime_characters':
         category = 'anime'
-        character_names = ['Yukinoshita_Yukino', 'Makise_Kurisu']
     elif request.resolver_match.url_name == 'game_characters':
         category = 'game'
-        character_names = ['Ganyu', 'Keqing', '2b_(nier:automata)', 'privaty_(unkind_maid)_(nikke)', 'yelan_(genshin_impact)', 'Raiden_Shogun', 'friedrich_der_grosse_(azur_lane)', 'zara_(azur_lane)', 'bremerton_(azur_lane)']
+
+    if category:
+        character_names_queryset = Character.objects.filter(category=category).order_by('order')
+        character_names = [character.name for character in character_names_queryset]
 
     side_box_images = get_default_secluded_box_images(request)
 

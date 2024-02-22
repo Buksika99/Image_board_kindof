@@ -3,10 +3,31 @@ from .models import Character
 
 
 # Register your models here.
-class CharacterAdmin(admin.ModelAdmin):
-    list_display = ('name', 'trivia', 'age', 'eye_color', 'created_at', 'updated_at')  # Customize the fields displayed in the list view
-    search_fields = ('name', 'trivia')  # Add fields to search
-    list_filter = ('age', 'eye_color')  # Add filters for specific fields
+class AnimeCharacter(Character):
+    class Meta:
+        proxy = True
 
-admin.site.register(Character, CharacterAdmin)
+class GameCharacter(Character):
+    class Meta:
+        proxy = True
 
+class AnimeCharacterAdmin(admin.ModelAdmin):
+    list_display = ('name', 'trivia', 'age', 'eye_color', 'created_at', 'updated_at', 'order')
+    search_fields = ('name', 'trivia')
+    list_filter = ('age', 'eye_color')
+    list_editable = ('order',)
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).filter(category='anime')
+
+class GameCharacterAdmin(admin.ModelAdmin):
+    list_display = ('name', 'trivia', 'age', 'eye_color', 'created_at', 'updated_at', 'order')
+    search_fields = ('name', 'trivia')
+    list_filter = ('age', 'eye_color')
+    list_editable = ('order',)
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).filter(category='game')
+
+admin.site.register(AnimeCharacter, AnimeCharacterAdmin)
+admin.site.register(GameCharacter, GameCharacterAdmin)
