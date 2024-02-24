@@ -1,5 +1,6 @@
 from django.db import models
-
+from django.contrib.auth.models import User
+from django.utils import timezone
 
 # Create your models here.
 class To_Do_List(models.Model):
@@ -39,7 +40,19 @@ class Character(models.Model):
     hair = models.TextField(blank=True)
     eye_color = models.CharField(max_length=100, blank=True)
     order = models.IntegerField(default=0)
+    id = models.AutoField(primary_key=True)  # Auto-incrementing ID field
+
     # You can add more fields such as description, abilities, etc. based on your needs
 
     def __str__(self):
         return self.name
+
+
+
+class Comment(models.Model):
+    character = models.ForeignKey('Character', on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    username = models.CharField(max_length=150)  # Add a field to store the username
+    text = models.TextField()
+    created_at = models.DateTimeField(default=timezone.now)
+

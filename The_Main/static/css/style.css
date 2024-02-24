@@ -79,16 +79,18 @@ color: #003cff;
 
 
 .secluded-box img {
-    width: auto; /* Adjust the image width as needed */
-    height: 500px;
+    width: 15vw; /* Adjust the image width as needed */
+    height: auto;
     display: block;
     margin: 0 auto 10px; /* Center the image horizontally */
 }
 
 
 .image-inside_secluded_box img {
-    width: 200px;
+    width: 18vw;
     height: auto;
+    margin-left: -9px;
+    margin-bottom: 15px;
 }
 
 .lightbox {
@@ -154,6 +156,28 @@ color: #003cff;
 }
 
 
+
+.delete-form {
+    display: inline-block; /* Display form inline */
+}
+
+.delete-button {
+    padding: 5px 10px; /* Adjust padding */
+    background-color: #dc3545; /* Red color for delete button */
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.delete-button:hover {
+    background-color: #bd2130;
+}
+
+/* Increase font size for comments */
+.comment-list li .comment-content {
+    font-size: 18px; /* Increase font size */
+}
 
 
 

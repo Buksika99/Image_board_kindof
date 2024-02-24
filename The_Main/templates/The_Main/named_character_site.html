@@ -5,6 +5,8 @@ Wiki Thing Title
 {% endblock %}
 
 {% block content %}
+    {% load static %}
+    <link rel="stylesheet" type="text/css" href="{% static 'css/comments_style.css' %}">
     <style>
         .secluded-box {
             background-color: #ff0000; /* Example. */
@@ -12,7 +14,50 @@ Wiki Thing Title
     </style>
 
     <h1>{{ character_name }}</h1>
-{#    <p>Database stuff like Trivia, age goes here</p>#}
+    {% if pulled_objects %}
+        {% for key, value in pulled_objects.items %}
+            {% if value is none %}
+                <p>{{ key }}: Unknown</p>
+            {% else %}
+                <p>{{ value }}</p>
+            {% endif %}
+        {% endfor %}
+    {% else %}
+        <p>No trivia found</p>
+    {% endif %}
+
+
+<div class="comment-section">
+    <h2>Comments</h2>
+
+    {% if user.is_authenticated %}
+        <form method="post" class="comment-form">
+            {% csrf_token %}
+            {{ comment_form.as_p }}
+            <button type="submit" id="comment-post-button">Post Comment</button>
+        </form>
+    {% else %}
+        <p>To comment, please <a href="/login/">log in here</a>.</p>
+    {% endif %}
+
+    <ul class="comment-list">
+        {% for comment in comments %}
+            <li>
+                <div class="comment-content">
+                    <strong style="color:{{ comment.color }}">{{ comment.username }}</strong>: <span class="comment-text">{{ comment.text }}</span>
+                </div>
+                {% if is_admin %}
+                    <form class="delete-form" action="{% url 'delete_comment' request.path comment.id %}" method="post">
+                        {% csrf_token %}
+                        <button type="submit" class="delete-button">Delete</button>
+                    </form>
+                {% endif %}
+            </li>
+        {% endfor %}
+    </ul>
+</div>
+
+
 {% endblock %}
 {% block secluded_box_content %}
 
@@ -29,6 +74,7 @@ Wiki Thing Title
         {% endfor %}
     </div>
 </div>
+
 
 {% endblock %}
 

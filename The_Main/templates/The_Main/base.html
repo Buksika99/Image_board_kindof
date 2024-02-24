@@ -37,11 +37,21 @@
 
         {% block side_nav_buttons %}
         <a href="/">Home</a>
-        <a href="/register/">Register</a>
-        <a href="/login/">Login</a>
         <a href="/characters/">Characters</a>
         <a href="/named_characters/ganyu">Ganyu</a>
         <a href="/named_characters/yukinoshita_yukino">Yukinoshita Yukino</a>
+       {% if user.is_authenticated %}
+            {% if user.is_staff %}
+                <a href="/create/">Create</a>
+            {% endif %}
+            <form action="{% url 'logout' %}" method="post">
+                {% csrf_token %}
+                <button type="submit">Log out</button>
+            </form>
+        {% else %}
+            <a href="/register/">Register</a>
+            <a href="/login/">Login</a>
+        {% endif %}
         {% endblock %}
 
     </div>

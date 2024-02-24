@@ -1,10 +1,13 @@
 from django.shortcuts import render, redirect
 from django.http import JsonResponse, HttpResponse
 import requests
-from .forms import SearchForm, CharacterForm
-from django.contrib.auth.models import User
+from .forms import SearchForm, CharacterForm, CommentForm
 from django.contrib.auth.decorators import user_passes_test
-from .models import Character
+from .models import Character, Comment
+from django.db.models import Case, When, Value, IntegerField
+from django.contrib.auth import logout
+from django import template
+from django.contrib.admin.views.decorators import staff_member_required
 
 def admin_required(user):
     is_admin = user.is_authenticated and user.is_staff
@@ -55,10 +58,65 @@ def named_character_site(request, character):
     path = request.path
     page_name = path.rsplit('/', 1)[-1]
     character_name = page_name.replace("_", " ")
+    pulled_objects = {}  # Initialize pulled_objects as a dictionary
+
+    if request.method == 'POST':
+        comment_form = CommentForm(request.POST)
+        if comment_form.is_valid():
+            comment = comment_form.save(commit=False)
+            character_obj = Character.objects.get(name=character.lower().title())
+            comment.character = character_obj
+            comment.user = request.user
+            comment.username = request.user.username  # Save the username
+            comment.save()
+            # Redirect or refresh the page as necessary
+            # Example: return redirect('named_character', character=character)
+    else:
+        comment_form = CommentForm()
+
+    comments = Comment.objects.filter(character__name=character.lower().title())
+
+    try:
+        character = Character.objects.get(name=page_name.lower().title())
+        pulled_objects['trivia'] = character.trivia
+        pulled_objects['hair'] = character.hair
+        pulled_objects['ability'] = character.ability
+    except Character.DoesNotExist:
+        pulled_objects['trivia'] = None
+        pulled_objects['hair'] = None
+        pulled_objects['ability'] = None
+
     character_data = get_images(request, tag_name=page_name)  # The side box thingie's images
 
-    return render(request, 'The_Main/named_character_site.html',
-                  {'character_data': character_data, 'character_name': character_name.title(), 'search_form': search_form})
+    # Include pulled_objects in the dictionary passed to render
+    return render(request, 'The_Main/named_character_site.html', {
+        'character_data': character_data,
+        'character_name': character_name.title(),
+        'search_form': search_form,
+        'pulled_objects': pulled_objects,
+        'comment_form': comment_form,
+        'comments': comments,
+        'is_admin': request.user.is_staff,  # Pass whether the user is admin to the template
+    })
+
+@staff_member_required
+def delete_comment(request, current_path, comment_id):
+    if request.method == 'POST':
+        comment = Comment.objects.get(pk=comment_id)
+        comment.delete()
+        # Redirect back to the current path after deleting the comment
+        return redirect(current_path)
+    else:
+        # Handle GET request if needed
+        pass
+
+def logout_view(request):
+    if request.method == 'POST':
+        logout(request)
+        return index(request)
+    else:
+        # Handle GET request
+        return index(request)
 
 
 # Function to get 5 images with the "airplane" tag from Danbooru
@@ -170,31 +228,43 @@ def get_default_secluded_box_images(request, **kwargs):
 # Route to get the Keqing images
 
 
+def fetch_character_names(category):
+    if category:
+        character_names_queryset = Character.objects.filter(category=category).order_by(
+            Case(
+                When(order=0, then=Value(9999)),
+                default='order',
+                output_field=IntegerField(),
+            ),
+            'created_at'
+        )
+        return [character.name for character in character_names_queryset]
+    else:
+        return []
+
 def characters(request):
     category = None
-    character_names = []
 
-    # Fetch character names based on the URL name
+    # Determine category based on URL name
     if request.resolver_match.url_name == 'anime_characters':
         category = 'anime'
     elif request.resolver_match.url_name == 'game_characters':
         category = 'game'
 
-    if category:
-        character_names_queryset = Character.objects.filter(category=category).order_by('order')
-        character_names = [character.name for character in character_names_queryset]
+    # Fetch character names based on category
+    character_names = fetch_character_names(category)
 
-    side_box_images = get_default_secluded_box_images(request)
-
+    # Process character names and fetch default images
     processed_data = []
     default_images = {}
+    side_box_images = get_default_secluded_box_images(request)
 
-    # Fetch default images and process character names
     for character_name in character_names:
         default_image = get_default_box_images(request, box_image=character_name)
         file_url = default_image[0].get('file_url', None) if default_image else None
         file_name = file_url if file_url else "Unknown.jpg"
         modified_name = character_name.replace('_', ' ')
+        modified_name = modified_name.split('(')[0].strip().title()
         processed_data.append((character_name, modified_name, file_name))
         default_images[character_name] = file_url
 
@@ -205,7 +275,6 @@ def characters(request):
     elif category == 'game':
         game_data = "Game Data Here"
         return render(request, 'The_Main/characters.html', {'category': category, 'side_box_images': side_box_images, 'game_data': game_data, 'character_links': processed_data, 'default_images': default_images})
-
     else:
         # Default behavior, when the URL is just /characters/
         # You can decide what to do here, perhaps render a generic characters page
@@ -252,6 +321,16 @@ def default_urls():
         'keqing': 'https://cdn.donmai.us/sample/12/8c/__keqing_genshin_impact_drawn_by_cokecoco__sample-128cdff55cec944f4bd5af3faa176150.jpg'
         ''
     }
+
+
+register = template.Library()
+
+@register.filter(name='add_class')
+def add_class(value, arg):
+    """
+    Adds a CSS class to the form field.
+    """
+    return value.as_widget(attrs={'class': arg})
 
 
 # https://danbooru.donmai.us/posts.json?tags=raiden_shogun&limit=1&page=1
