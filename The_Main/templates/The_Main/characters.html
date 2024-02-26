@@ -66,11 +66,13 @@ Characters
 
 <div class="secluded-box">
     <!-- Secluded box content -->
-    <img src="{% url 'proxy_for_static_image' 'https://cdn.donmai.us/sample/12/8c/__keqing_genshin_impact_drawn_by_cokecoco__sample-128cdff55cec944f4bd5af3faa176150.jpg' %}" alt="Secluded Box Image">
+    {% if side_box_images %}
+        <img src="{% url 'proxy_for_static_image' side_box_images.0.file_url %}" alt="Secluded Box Image">
+    {% endif %}
     <p>Some text beneath the image</p>
 
-    <div class="image-inside_secluded_box">
-        {% for image in side_box_images %}
+    <div class="image-inside_secluded_box" id="image-inside-secluded-box">
+        {% for image in side_box_images|slice:"1:" %}
             {% if image.file_url|lower|slice:"-3:" == "png" or image.file_url|lower|slice:"-3:" == "jpg" %}
                 <img src="{% url 'proxy_image' image.file_url %}" alt="Image" class="lightbox-trigger">
             {% endif %}

@@ -61,13 +61,15 @@ Wiki Thing Title
 {% endblock %}
 {% block secluded_box_content %}
 
-<div class="secluded-box">
+<div class="secluded-box" id="secluded-box">
     <!-- Secluded box content -->
-    <img src="{% url 'proxy_for_static_image' 'https://cdn.donmai.us/sample/12/8c/__keqing_genshin_impact_drawn_by_cokecoco__sample-128cdff55cec944f4bd5af3faa176150.jpg' %}" alt="Secluded Box Image">
+    {% if character_data %}
+        <img src="{% url 'proxy_for_static_image' character_data.0.file_url %}" alt="Secluded Box Image">
+    {% endif %}
     <p>Some text beneath the image</p>
 
     <div class="image-inside_secluded_box">
-        {% for image in character_data %}
+        {% for image in character_data|slice:"1:" %}
             {% if image.file_url|lower|slice:"-3:" == "png" or image.file_url|lower|slice:"-3:" == "jpg" %}
                 <img src="{% url 'proxy_image' image.file_url %}" alt="Image" class="lightbox-trigger">
             {% endif %}

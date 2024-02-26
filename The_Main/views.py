@@ -1,3 +1,5 @@
+import random
+
 from django.shortcuts import render, redirect
 from django.http import JsonResponse, HttpResponse
 import requests
@@ -9,10 +11,12 @@ from django.contrib.auth import logout
 from django import template
 from django.contrib.admin.views.decorators import staff_member_required
 
+
 def admin_required(user):
     is_admin = user.is_authenticated and user.is_staff
     print(f"User '{user.username}' is{' not' if not is_admin else ''} admin")
     return is_admin
+
 
 # Create your views here.
 def Welcome_Page_I_guess(request):
@@ -29,19 +33,33 @@ DANBOORU_API_URL = "https://danbooru.donmai.us/posts.json"
 
 def index(request, tag_name=None):
     page_number = request.GET.get('page', 1)  # Get page number from query parameters, default to 1
+    random_secluded_character = random_default_secluded_box_character_chooser()
+    print(f"random character chosen in index {random_secluded_character}")
+
     if request.method == 'POST':
         search_form = SearchForm(request.POST)
+        rating = 'safe'
         if search_form.is_valid():
             search_text = search_form.cleaned_data['searchText']
             danbooru_data = get_images(request, search_text=search_text)
-            secluded_data = get_default_secluded_box_images(request, page=page_number)
         else:
             danbooru_data = get_images(request)
-            secluded_data = get_default_secluded_box_images(request, page=page_number)
+
+        if 'rating' in request.POST:
+            rating = request.POST['rating']
+            request.session['rating'] = rating  # Store the rating in session
+        elif 'rating' in request.session:
+            rating = request.session['rating']  # Retrieve the rating from session
+        secluded_data = get_default_secluded_box_images(request, page=page_number, character=random_secluded_character, rating=rating)
+
     else:
         search_form = SearchForm()
         danbooru_data = get_images(request, tag_name=tag_name)
-        secluded_data = get_default_secluded_box_images(request, page=page_number)
+        if 'rating' in request.session:
+            rating = request.session['rating']  # Retrieve the rating from session
+        else:
+            rating = 'safe'  # Default rating if not found in session
+        secluded_data = get_default_secluded_box_images(request, page=page_number, character=random_secluded_character, rating=rating)
 
     path = request.path
     page_name = path.rsplit('/', 1)[-1]
@@ -49,8 +67,7 @@ def index(request, tag_name=None):
 
     return render(request, 'The_Main/index.html',
                   {'danbooru_data': danbooru_data, 'secluded_data': secluded_data, 'search_form': search_form,
-                   'character_name': character_name.title()})
-
+                   'character_name': character_name.title(), 'secluded_character': random_secluded_character, 'ratingToggle': rating})
 
 
 def named_character_site(request, character):
@@ -99,6 +116,7 @@ def named_character_site(request, character):
         'is_admin': request.user.is_staff,  # Pass whether the user is admin to the template
     })
 
+
 @staff_member_required
 def delete_comment(request, current_path, comment_id):
     if request.method == 'POST':
@@ -109,6 +127,7 @@ def delete_comment(request, current_path, comment_id):
     else:
         # Handle GET request if needed
         pass
+
 
 def logout_view(request):
     if request.method == 'POST':
@@ -206,16 +225,49 @@ def proxy_for_static_image(request, image_url):
         return HttpResponse("Image not found", status=response.status_code)
 
 
+def random_default_secluded_box_character_chooser():
+    character_list = ['Keqing',
+                      'Raiden_Shogun',
+                      'Ganyu',
+                      'yelan_(genshin_impact)',
+                      'kayoko_(dress)_(blue_archive)',
+                      'aru_(dress)_(blue_archive)',
+                      'ako_(dress)_(blue_archive)',
+                      'privaty_(unkind_maid)_(nikke)',
+                      'yuuka_(blue_archive)',
+                      'shiroko_(blue_archive)',
+                      'shiroko_terror_(blue_archive)',
+                      'karin_(bunny)_(blue_archive)',
+                      'asuna_(bunny)_(blue_archive)',
+                      'mutsuki_(dress)_(blue_archive)',
+                      'toki_(bunny)_(blue_archive)',
+                      'mari_(blue_archive)',
+                      'playboy_bunny']
+
+    return random.choice(character_list)
+
+
 # Function to get 5 images with the "keqing" tag from Danbooru
 def get_default_secluded_box_images(request, **kwargs):
-    character = kwargs.get('character', "Keqing")  # Retrieve the value of 'character' from kwargs, defaulting to None if not present
+    character = kwargs.get('character',
+                           'Keqing')  # Retrieve the value of 'character' from kwargs, defaulting to None if not present
+    rating = ''
+    print(f" THIS IS THE KWARGS SAFEONE: {kwargs.get('rating', 'safe')}")
+
+    if kwargs.get('rating') == "safe":
+        rating = ' rating:s -nude'
+    elif kwargs.get('rating') == "disable_rating":
+        rating = ' nude'
+
     page = kwargs.get('page', 1)
 
     params = {
-        'tags': character,
+        'tags': f"{character}{rating}",
         'limit': 5,
         'page': page
     }
+
+    print(f"the parameters sent in get default {params}")
 
     response = requests.get(DANBOORU_API_URL, params=params)
 
@@ -242,6 +294,7 @@ def fetch_character_names(category):
     else:
         return []
 
+
 def characters(request):
     category = None
 
@@ -257,7 +310,8 @@ def characters(request):
     # Process character names and fetch default images
     processed_data = []
     default_images = {}
-    side_box_images = get_default_secluded_box_images(request)
+    random_secluded_character = random_default_secluded_box_character_chooser()
+
 
     for character_name in character_names:
         default_image = get_default_box_images(request, box_image=character_name)
@@ -268,18 +322,32 @@ def characters(request):
         processed_data.append((character_name, modified_name, file_name))
         default_images[character_name] = file_url
 
+    # Handle rating
+    rating = 'safe'  # Default rating if not found in session
+    if request.method == 'POST':
+        if 'rating' in request.POST:
+            rating = request.POST['rating']
+            request.session['rating'] = rating  # Store the rating in session
+        elif 'rating' in request.session:
+            rating = request.session['rating']  # Retrieve the rating from session
+
+    side_box_images = get_default_secluded_box_images(request, character=random_secluded_character, rating=rating)
+
     # Render the response based on the category
     if category == 'anime':
         anime_data = "Anime Data Here"
-        return render(request, 'The_Main/characters.html', {'category': category, 'side_box_images': side_box_images, 'anime_data': anime_data, 'character_links': processed_data, 'default_images': default_images})
+        return render(request, 'The_Main/characters.html',
+                      {'category': category, 'side_box_images': side_box_images, 'anime_data': anime_data,
+                       'character_links': processed_data, 'default_images': default_images, 'secluded_character': random_secluded_character, 'ratingToggle': rating})
     elif category == 'game':
         game_data = "Game Data Here"
-        return render(request, 'The_Main/characters.html', {'category': category, 'side_box_images': side_box_images, 'game_data': game_data, 'character_links': processed_data, 'default_images': default_images})
+        return render(request, 'The_Main/characters.html',
+                      {'category': category, 'side_box_images': side_box_images, 'game_data': game_data,
+                       'character_links': processed_data, 'default_images': default_images, 'secluded_character': random_secluded_character, 'ratingToggle': rating})
     else:
         # Default behavior, when the URL is just /characters/
         # You can decide what to do here, perhaps render a generic characters page
-        return render(request, 'The_Main/characters.html', {'side_box_images': side_box_images})
-
+        return render(request, 'The_Main/characters.html', {'side_box_images': side_box_images, 'secluded_character': random_secluded_character, 'ratingToggle': rating})
 
 @user_passes_test(admin_required)
 def create_character(request):
@@ -304,7 +372,6 @@ def character_list_to_generate_links(request):
     return render(request, 'characters.html', {'character_names': character_names})
 
 
-
 def get_more_images(request):
     character = request.GET.get('character', 'Keqing')
     page = int(request.GET.get('page', 1))
@@ -319,11 +386,12 @@ def get_more_images(request):
 def default_urls():
     urls = {
         'keqing': 'https://cdn.donmai.us/sample/12/8c/__keqing_genshin_impact_drawn_by_cokecoco__sample-128cdff55cec944f4bd5af3faa176150.jpg'
-        ''
+                  ''
     }
 
 
 register = template.Library()
+
 
 @register.filter(name='add_class')
 def add_class(value, arg):
@@ -331,6 +399,5 @@ def add_class(value, arg):
     Adds a CSS class to the form field.
     """
     return value.as_widget(attrs={'class': arg})
-
 
 # https://danbooru.donmai.us/posts.json?tags=raiden_shogun&limit=1&page=1

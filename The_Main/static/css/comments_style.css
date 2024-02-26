@@ -97,3 +97,24 @@
     margin-top: 10px;
 }
 
+.delete-form {
+    display: inline-block; /* Display form inline */
+}
+
+.delete-button {
+    padding: 5px 10px; /* Adjust padding */
+    background-color: #dc3545; /* Red color for delete button */
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.delete-button:hover {
+    background-color: #bd2130;
+}
+
+/* Increase font size for comments */
+.comment-list li .comment-content {
+    font-size: 18px; /* Increase font size */
+}
