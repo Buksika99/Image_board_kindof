@@ -16,6 +16,6 @@ urlpatterns = [
     path('get_default_secluded_box_images/', views.get_default_secluded_box_images, name='get_default_secluded_box_images'),
     path('proxy-image/<path:image_url>/', views.proxy_image, name='proxy_image'),
     path('proxy_for_static_image/<path:image_url>/', views.proxy_for_static_image, name='proxy_for_static_image'),
-    path('<str:tag_name>', views.index, name='random_page'),
+    path('<str:tag_name>', views.random_page, name='random_page'),
 
 ]

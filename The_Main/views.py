@@ -31,35 +31,34 @@ def An_Alt_Site(request):
 DANBOORU_API_URL = "https://danbooru.donmai.us/posts.json"
 
 
-def index(request, tag_name=None):
+def process_request(request, page_number, random_secluded_character):
+    search_form = SearchForm(request.POST if request.method == 'POST' else None)
+    rating = 'safe'
+
+    if 'rating' in request.POST:
+        rating = request.POST['rating']
+        request.session['rating'] = rating  # Store the rating in session
+    elif 'rating' in request.session:
+        rating = request.session['rating']  # Retrieve the rating from session
+
+    if search_form.is_valid():
+        search_text = search_form.cleaned_data['searchText']
+        danbooru_data = get_images(request, search_text=search_text, rating=rating)
+    else:
+        danbooru_data = get_images(request, rating=rating)
+
+    secluded_data = get_default_secluded_box_images(request, page=page_number, character=random_secluded_character,
+                                                    rating=rating)
+
+    return search_form, rating, danbooru_data, secluded_data
+
+
+def index(request):
     page_number = request.GET.get('page', 1)  # Get page number from query parameters, default to 1
     random_secluded_character = random_default_secluded_box_character_chooser()
     print(f"random character chosen in index {random_secluded_character}")
 
-    if request.method == 'POST':
-        search_form = SearchForm(request.POST)
-        rating = 'safe'
-        if search_form.is_valid():
-            search_text = search_form.cleaned_data['searchText']
-            danbooru_data = get_images(request, search_text=search_text)
-        else:
-            danbooru_data = get_images(request)
-
-        if 'rating' in request.POST:
-            rating = request.POST['rating']
-            request.session['rating'] = rating  # Store the rating in session
-        elif 'rating' in request.session:
-            rating = request.session['rating']  # Retrieve the rating from session
-        secluded_data = get_default_secluded_box_images(request, page=page_number, character=random_secluded_character, rating=rating)
-
-    else:
-        search_form = SearchForm()
-        danbooru_data = get_images(request, tag_name=tag_name)
-        if 'rating' in request.session:
-            rating = request.session['rating']  # Retrieve the rating from session
-        else:
-            rating = 'safe'  # Default rating if not found in session
-        secluded_data = get_default_secluded_box_images(request, page=page_number, character=random_secluded_character, rating=rating)
+    search_form, rating, danbooru_data, secluded_data = process_request(request, page_number, random_secluded_character)
 
     path = request.path
     page_name = path.rsplit('/', 1)[-1]
@@ -67,7 +66,23 @@ def index(request, tag_name=None):
 
     return render(request, 'The_Main/index.html',
                   {'danbooru_data': danbooru_data, 'secluded_data': secluded_data, 'search_form': search_form,
-                   'character_name': character_name.title(), 'secluded_character': random_secluded_character, 'ratingToggle': rating})
+                   'character_name': character_name.title(), 'secluded_character': random_secluded_character,
+                   'ratingToggle': rating})
+
+
+def random_page(request, tag_name):
+    page_number = request.GET.get('page', 1)  # Get page number from query parameters, default to 1
+    random_secluded_character = random_default_secluded_box_character_chooser()
+    print(f"random character chosen in random_page {random_secluded_character}")
+
+    search_form, rating, danbooru_data, secluded_data = process_request(request, page_number, random_secluded_character)
+
+    character_name = tag_name.replace("_", " ")
+
+    return render(request, 'The_Main/index.html',
+                  {'danbooru_data': danbooru_data, 'secluded_data': secluded_data, 'search_form': search_form,
+                   'character_name': character_name.title(), 'secluded_character': random_secluded_character,
+                   'ratingToggle': rating})
 
 
 def named_character_site(request, character):
@@ -86,8 +101,8 @@ def named_character_site(request, character):
             comment.user = request.user
             comment.username = request.user.username  # Save the username
             comment.save()
-            # Redirect or refresh the page as necessary
-            # Example: return redirect('named_character', character=character)
+            # Redirect to the same page after POST to avoid form resubmission issues
+            return redirect(request.path)
     else:
         comment_form = CommentForm()
 
@@ -103,7 +118,14 @@ def named_character_site(request, character):
         pulled_objects['hair'] = None
         pulled_objects['ability'] = None
 
-    character_data = get_images(request, tag_name=page_name)  # The side box thingie's images
+    rating = 'safe'
+    if 'rating' in request.POST:
+        rating = request.POST['rating']
+        request.session['rating'] = rating  # Store the rating in session
+    elif 'rating' in request.session:
+        rating = request.session['rating']  # Retrieve the rating from session
+
+    character_data = get_images(request, tag_name=page_name, rating=rating)  # The side box thingie's images
 
     # Include pulled_objects in the dictionary passed to render
     return render(request, 'The_Main/named_character_site.html', {
@@ -115,7 +137,6 @@ def named_character_site(request, character):
         'comments': comments,
         'is_admin': request.user.is_staff,  # Pass whether the user is admin to the template
     })
-
 
 @staff_member_required
 def delete_comment(request, current_path, comment_id):
@@ -149,9 +170,18 @@ def get_images(request, **kwargs):
     if tag_name is None and 'tag_name' in kwargs:
         tag_name = kwargs['tag_name']
 
+    rating = ''
+    print(f" THIS IS THE KWARGS GET_IMAGES: {kwargs.get('rating', 'safe')}")
+
+    if kwargs.get('rating') == "safe":
+        rating = ' rating:s -nude'
+    elif kwargs.get('rating') == "disable_rating":
+        rating = ' nude'
+
     path = request.path
     # Extract the part after the last slash to get the page name
     page_name = path.rsplit('/', 1)[-1]
+    print(page_name)
     if page_name == "":
         params = {
             'tags': "airplane",
@@ -159,9 +189,11 @@ def get_images(request, **kwargs):
         }
     else:
         params = {
-            'tags': f"{tag_name} rating:s -nude",
+            'tags': f"{page_name}{rating}",
             'limit': 5
         }
+
+    print(f"params {params}")
 
     if request.method == 'POST':
         # search_text = request.POST.get('searchText')
@@ -312,7 +344,6 @@ def characters(request):
     default_images = {}
     random_secluded_character = random_default_secluded_box_character_chooser()
 
-
     for character_name in character_names:
         default_image = get_default_box_images(request, box_image=character_name)
         file_url = default_image[0].get('file_url', None) if default_image else None
@@ -338,16 +369,21 @@ def characters(request):
         anime_data = "Anime Data Here"
         return render(request, 'The_Main/characters.html',
                       {'category': category, 'side_box_images': side_box_images, 'anime_data': anime_data,
-                       'character_links': processed_data, 'default_images': default_images, 'secluded_character': random_secluded_character, 'ratingToggle': rating})
+                       'character_links': processed_data, 'default_images': default_images,
+                       'secluded_character': random_secluded_character, 'ratingToggle': rating})
     elif category == 'game':
         game_data = "Game Data Here"
         return render(request, 'The_Main/characters.html',
                       {'category': category, 'side_box_images': side_box_images, 'game_data': game_data,
-                       'character_links': processed_data, 'default_images': default_images, 'secluded_character': random_secluded_character, 'ratingToggle': rating})
+                       'character_links': processed_data, 'default_images': default_images,
+                       'secluded_character': random_secluded_character, 'ratingToggle': rating})
     else:
         # Default behavior, when the URL is just /characters/
         # You can decide what to do here, perhaps render a generic characters page
-        return render(request, 'The_Main/characters.html', {'side_box_images': side_box_images, 'secluded_character': random_secluded_character, 'ratingToggle': rating})
+        return render(request, 'The_Main/characters.html',
+                      {'side_box_images': side_box_images, 'secluded_character': random_secluded_character,
+                       'ratingToggle': rating})
+
 
 @user_passes_test(admin_required)
 def create_character(request):
