@@ -1,7 +1,7 @@
 import random
 
 from django.shortcuts import render, redirect
-from django.http import JsonResponse, HttpResponse
+from django.http import JsonResponse, HttpResponse, HttpResponseServerError
 import requests
 from .forms import SearchForm, CharacterForm, CommentForm
 from django.contrib.auth.decorators import user_passes_test
@@ -10,6 +10,7 @@ from django.db.models import Case, When, Value, IntegerField
 from django.contrib.auth import logout
 from django import template
 from django.contrib.admin.views.decorators import staff_member_required
+from django.core.exceptions import ObjectDoesNotExist
 
 
 def admin_required(user):
@@ -32,111 +33,152 @@ DANBOORU_API_URL = "https://danbooru.donmai.us/posts.json"
 
 
 def process_request(request, page_number, random_secluded_character):
-    search_form = SearchForm(request.POST if request.method == 'POST' else None)
-    rating = 'safe'
+    try:
+        search_form = SearchForm(request.POST if request.method == 'POST' else None)
+        rating = 'safe'
 
-    if 'rating' in request.POST:
-        rating = request.POST['rating']
-        request.session['rating'] = rating  # Store the rating in session
-    elif 'rating' in request.session:
-        rating = request.session['rating']  # Retrieve the rating from session
+        if 'rating' in request.POST:
+            rating = request.POST['rating']
+            request.session['rating'] = rating  # Store the rating in session
+        elif 'rating' in request.session:
+            rating = request.session['rating']  # Retrieve the rating from session
 
-    if search_form.is_valid():
-        search_text = search_form.cleaned_data['searchText']
-        danbooru_data = get_images(request, search_text=search_text, rating=rating)
-    else:
-        danbooru_data = get_images(request, rating=rating)
+        if search_form.is_valid():
+            search_text = search_form.cleaned_data['searchText']
+            danbooru_data = get_images(request, search_text=search_text, rating=rating)
+        else:
+            danbooru_data = get_images(request, rating=rating)
 
-    secluded_data = get_default_secluded_box_images(request, page=page_number, character=random_secluded_character,
-                                                    rating=rating)
+        secluded_data = get_default_secluded_box_images(request, page=page_number, character=random_secluded_character,
+                                                        rating=rating)
 
-    return search_form, rating, danbooru_data, secluded_data
+        return search_form, rating, danbooru_data, secluded_data
+
+    except Exception as e:
+        # Log the error for debugging
+        print(f"An error occurred in process_request: {e}")
+        # Handle the error gracefully, perhaps return an appropriate response to the user
+        return None, None, [], []
 
 
 def index(request):
-    page_number = request.GET.get('page', 1)  # Get page number from query parameters, default to 1
-    random_secluded_character = random_default_secluded_box_character_chooser()
-    print(f"random character chosen in index {random_secluded_character}")
+    try:
+        page_number = request.GET.get('page', 1)  # Get page number from query parameters, default to 1
+        random_secluded_character = random_default_secluded_box_character_chooser()
+        print(f"random character chosen in index {random_secluded_character}")
 
-    search_form, rating, danbooru_data, secluded_data = process_request(request, page_number, random_secluded_character)
+        search_form, rating, danbooru_data, secluded_data = process_request(request, page_number,
+                                                                            random_secluded_character)
 
-    path = request.path
-    page_name = path.rsplit('/', 1)[-1]
-    character_name = page_name.replace("_", " ")
+        if search_form is None or rating is None:
+            # Handle the case where there was an error processing the request
+            return HttpResponseServerError("An error occurred while processing the request.")
 
-    return render(request, 'The_Main/index.html',
-                  {'danbooru_data': danbooru_data, 'secluded_data': secluded_data, 'search_form': search_form,
-                   'character_name': character_name.title(), 'secluded_character': random_secluded_character,
-                   'ratingToggle': rating})
+        path = request.path
+        page_name = path.rsplit('/', 1)[-1]
+        character_name = page_name.replace("_", " ")
+
+        return render(request, 'The_Main/index.html',
+                      {'danbooru_data': danbooru_data, 'secluded_data': secluded_data, 'search_form': search_form,
+                       'character_name': character_name.title(), 'secluded_character': random_secluded_character,
+                       'ratingToggle': rating})
+
+    except Exception as e:
+        # Log the error for debugging
+        print(f"An error occurred in index view: {e}")
+        # Handle the error gracefully, perhaps return an appropriate response to the user
+        return HttpResponseServerError("An error occurred while processing the request.")
 
 
 def random_page(request, tag_name):
-    page_number = request.GET.get('page', 1)  # Get page number from query parameters, default to 1
-    random_secluded_character = random_default_secluded_box_character_chooser()
-    print(f"random character chosen in random_page {random_secluded_character}")
+    try:
+        page_number = request.GET.get('page', 1)  # Get page number from query parameters, default to 1
+        random_secluded_character = random_default_secluded_box_character_chooser()
+        print(f"random character chosen in random_page {random_secluded_character}")
 
-    search_form, rating, danbooru_data, secluded_data = process_request(request, page_number, random_secluded_character)
+        search_form, rating, danbooru_data, secluded_data = process_request(request, page_number,
+                                                                            random_secluded_character)
 
-    character_name = tag_name.replace("_", " ")
+        if search_form is None or rating is None:
+            # Handle the case where there was an error processing the request
+            return HttpResponseServerError("An error occurred while processing the request.")
 
-    return render(request, 'The_Main/index.html',
-                  {'danbooru_data': danbooru_data, 'secluded_data': secluded_data, 'search_form': search_form,
-                   'character_name': character_name.title(), 'secluded_character': random_secluded_character,
-                   'ratingToggle': rating})
+        character_name = tag_name.replace("_", " ")
+
+        return render(request, 'The_Main/index.html',
+                      {'danbooru_data': danbooru_data, 'secluded_data': secluded_data, 'search_form': search_form,
+                       'character_name': character_name.title(), 'secluded_character': random_secluded_character,
+                       'ratingToggle': rating})
+
+    except Exception as e:
+        # Log the error for debugging
+        print(f"An error occurred in random_page view: {e}")
+        # Handle the error gracefully, perhaps return an appropriate response to the user
+        return HttpResponseServerError("An error occurred while processing the request.")
+
+
 
 
 def named_character_site(request, character):
-    search_form = SearchForm()
-    path = request.path
-    page_name = path.rsplit('/', 1)[-1]
-    character_name = page_name.replace("_", " ")
-    pulled_objects = {}  # Initialize pulled_objects as a dictionary
-
-    if request.method == 'POST':
-        comment_form = CommentForm(request.POST)
-        if comment_form.is_valid():
-            comment = comment_form.save(commit=False)
-            character_obj = Character.objects.get(name=character.lower().title())
-            comment.character = character_obj
-            comment.user = request.user
-            comment.username = request.user.username  # Save the username
-            comment.save()
-            # Redirect to the same page after POST to avoid form resubmission issues
-            return redirect(request.path)
-    else:
-        comment_form = CommentForm()
-
-    comments = Comment.objects.filter(character__name=character.lower().title())
-
     try:
-        character = Character.objects.get(name=page_name.lower().title())
-        pulled_objects['trivia'] = character.trivia
-        pulled_objects['hair'] = character.hair
-        pulled_objects['ability'] = character.ability
-    except Character.DoesNotExist:
-        pulled_objects['trivia'] = None
-        pulled_objects['hair'] = None
-        pulled_objects['ability'] = None
+        search_form = SearchForm()
+        path = request.path
+        page_name = path.rsplit('/', 1)[-1]
+        character_name = page_name.replace("_", " ")
+        pulled_objects = {}  # Initialize pulled_objects as a dictionary
 
-    rating = 'safe'
-    if 'rating' in request.POST:
-        rating = request.POST['rating']
-        request.session['rating'] = rating  # Store the rating in session
-    elif 'rating' in request.session:
-        rating = request.session['rating']  # Retrieve the rating from session
+        if request.method == 'POST':
+            comment_form = CommentForm(request.POST)
+            if comment_form.is_valid():
+                comment = comment_form.save(commit=False)
+                character_obj = Character.objects.get(name=character.lower().title())
+                comment.character = character_obj
+                comment.user = request.user
+                comment.username = request.user.username  # Save the username
+                comment.save()
+                # Redirect to the same page after POST to avoid form resubmission issues
+                return redirect(request.path)
+        else:
+            comment_form = CommentForm()
 
-    character_data = get_images(request, tag_name=page_name, rating=rating)  # The side box thingie's images
+        comments = Comment.objects.filter(character__name=character.lower().title())
 
-    # Include pulled_objects in the dictionary passed to render
-    return render(request, 'The_Main/named_character_site.html', {
-        'character_data': character_data,
-        'character_name': character_name.title(),
-        'search_form': search_form,
-        'pulled_objects': pulled_objects,
-        'comment_form': comment_form,
-        'comments': comments,
-        'is_admin': request.user.is_staff,  # Pass whether the user is admin to the template
-    })
+        try:
+            character = Character.objects.get(name=page_name.lower().title())
+            pulled_objects['trivia'] = character.trivia
+            pulled_objects['hair'] = character.hair
+            pulled_objects['ability'] = character.ability
+        except ObjectDoesNotExist:
+            pulled_objects['trivia'] = None
+            pulled_objects['hair'] = None
+            pulled_objects['ability'] = None
+
+        rating = 'safe'
+        if 'rating' in request.POST:
+            rating = request.POST['rating']
+            request.session['rating'] = rating  # Store the rating in session
+        elif 'rating' in request.session:
+            rating = request.session['rating']  # Retrieve the rating from session
+
+        character_data = get_images(request, tag_name=page_name, rating=rating)  # The side box thingie's images
+
+        # Include pulled_objects in the dictionary passed to render
+        return render(request, 'The_Main/named_character_site.html', {
+            'character_data': character_data,
+            'character_name': character_name.title(),
+            'search_form': search_form,
+            'pulled_objects': pulled_objects,
+            'comment_form': comment_form,
+            'comments': comments,
+            'is_admin': request.user.is_staff,  # Pass whether the user is admin to the template
+        })
+
+    except Exception as e:
+        # Log the error for debugging purposes
+        print(f"Error in named_character_site view: {e}")
+        # You can render a custom error page or redirect to a generic error page
+        return HttpResponse("An error occurred. Please try again later.", status=500)
+
 
 
 @staff_member_required

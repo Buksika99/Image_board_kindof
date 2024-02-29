@@ -44,7 +44,7 @@ Wiki Thing Title
         {% for comment in comments %}
             <li>
                 <div class="comment-content">
-                    <strong style="color:{{ comment.color }}">{{ comment.username }}</strong>: <span class="comment-text">{{ comment.text }}</span>
+                    <strong style="color:{{ comment.color }}">{{ comment.username }}: {{ comment.created_at }}</strong>: <span class="comment-text">{{ comment.text }}</span>
                 </div>
                 {% if is_admin %}
                     <form class="delete-form" action="{% url 'delete_comment' request.path comment.id %}" method="post">
