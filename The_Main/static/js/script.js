@@ -70,6 +70,8 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function openLightbox() {
+        // Add class to body to disable scrolling
+        document.body.classList.add('no-scroll');
         lightboxContent.setAttribute('src', this.getAttribute('src'));
         lightbox.classList.add('show');
         lightboxOverlay.classList.add('show');
@@ -77,6 +79,8 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function closeLightbox() {
+        // Remove class from body to enable scrolling
+        document.body.classList.remove('no-scroll');
         lightbox.classList.remove('show');
         lightboxOverlay.classList.remove('show');
         resetZoom();

@@ -195,6 +195,10 @@ color: #003cff;
 }
 
 
+.no-scroll {
+    overflow: hidden;
+}
+
 
 /*.enlarged {*/
 /*    !* Define the enlarged size properties *!*/
