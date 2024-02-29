@@ -9,7 +9,6 @@ from django.http import HttpResponse
 # Create your views here.
 
 
-
 def register(request):
     if request.method == "POST":
         registration_form = RegisterForm(request.POST)
@@ -17,10 +16,27 @@ def register(request):
             registration_form.save()
     else:
         registration_form = RegisterForm()
-    keqing_data = imported_views.get_images(request, tag_name="Keqing")
-    return render(request, "register/register.html", {"registration_form": registration_form, 'keqing_data': keqing_data})
 
+    # Call process_request function to get required data
+    page_number = request.GET.get('page', 1)  # Get page number from query parameters, default to 1
+    random_secluded_character = imported_views.random_default_secluded_box_character_chooser()
+    search_form, rating, danbooru_data, secluded_data = imported_views.process_request(request, page_number, random_secluded_character)
 
+    # Additional data retrieval
+    character_name = "Keqing"  # Example tag name
+    keqing_data = imported_views.get_images(request, tag_name=character_name)
+
+    # Render the template with the retrieved data
+    return render(request, "register/register.html", {
+        "registration_form": registration_form,
+        "danbooru_data": danbooru_data,
+        "secluded_data": secluded_data,
+        "search_form": search_form,
+        "character_name": character_name.title(),
+        "secluded_character": random_secluded_character,
+        "ratingToggle": rating,
+        "keqing_data": keqing_data
+    })
 
 
 def login_view(request):
@@ -38,5 +54,24 @@ def login_view(request):
                 return HttpResponse("Invalid username or password. Please try again.")
     else:
         login_form = AuthenticationForm()
-    keqing_data = imported_views.get_images(request, tag_name="Keqing")
-    return render(request, 'registration/login.html', {'login_form': login_form, 'keqing_data': keqing_data})
+
+    # Call process_request function to get required data
+    page_number = request.GET.get('page', 1)  # Get page number from query parameters, default to 1
+    random_secluded_character = imported_views.random_default_secluded_box_character_chooser()
+    search_form, rating, danbooru_data, secluded_data = imported_views.process_request(request, page_number, random_secluded_character)
+
+    # Additional data retrieval
+    character_name = "Keqing"  # Example tag name
+    keqing_data = imported_views.get_images(request, tag_name=character_name)
+
+    # Render the template with the retrieved data
+    return render(request, 'registration/login.html', {
+        'login_form': login_form,
+        'danbooru_data': danbooru_data,
+        'secluded_data': secluded_data,
+        'search_form': search_form,
+        'character_name': character_name.title(),
+        'secluded_character': random_secluded_character,
+        'ratingToggle': rating,
+        'keqing_data': keqing_data
+    })

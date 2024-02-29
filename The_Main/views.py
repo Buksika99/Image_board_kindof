@@ -138,6 +138,7 @@ def named_character_site(request, character):
         'is_admin': request.user.is_staff,  # Pass whether the user is admin to the template
     })
 
+
 @staff_member_required
 def delete_comment(request, current_path, comment_id):
     if request.method == 'POST':

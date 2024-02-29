@@ -80,7 +80,16 @@
 {% block secluded_box_content %}
     <div class="secluded-box" id="secluded-box">
         <!-- Secluded box content -->
-        <img src="{% url 'proxy_for_static_image' 'https://cdn.donmai.us/sample/12/8c/__keqing_genshin_impact_drawn_by_cokecoco__sample-128cdff55cec944f4bd5af3faa176150.jpg' %}" alt="Secluded Box Image">
+        {% if secluded_data %}
+            {% if secluded_data.0.file_url|lower|slice:"-3:" == "jpg" or secluded_data.0.file_url|lower|slice:"-3:" == "png" %}
+                <img src="{% url 'proxy_for_static_image' secluded_data.0.file_url %}" alt="Secluded Box Image">
+            {% elif secluded_data.1.file_url|lower|slice:"-3:" == "jpg" or secluded_data.1.file_url|lower|slice:"-3:" == "png" %}
+                <img src="{% url 'proxy_for_static_image' secluded_data.1.file_url %}" alt="Secluded Box Image">
+            {% elif secluded_data.2.file_url|lower|slice:"-3:" == "jpg" or secluded_data.2.file_url|lower|slice:"-3:" == "png" %}
+                <img src="{% url 'proxy_for_static_image' secluded_data.2.file_url %}" alt="Secluded Box Image">
+            {% endif %}
+
+        {% endif %}
         <p>Some text beneath the image</p>
 
         <div class="image-inside_secluded_box" id="image-inside-secluded-box">
