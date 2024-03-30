@@ -4,7 +4,6 @@ from . import views
 
 urlpatterns = [
     path("", include("django.contrib.auth.urls")),
-    path("alt_site/", views.An_Alt_Site, name='Alt_Site'),
     path("characters/", views.characters, name="characters"),
     path('create/', views.create_character, name='create_character'),
     path('delete_comment/<path:current_path>/<int:comment_id>/', views.delete_comment, name='delete_comment'),
@@ -16,6 +15,5 @@ urlpatterns = [
     path('get_default_secluded_box_images/', views.get_default_secluded_box_images, name='get_default_secluded_box_images'),
     path('proxy-image/<path:image_url>/', views.proxy_image, name='proxy_image'),
     path('proxy_for_static_image/<path:image_url>/', views.proxy_for_static_image, name='proxy_for_static_image'),
-    path('<str:tag_name>', views.random_page, name='random_page'),
 
 ]

@@ -9,7 +9,10 @@ Characters
 {% block content %}
 
 {% load static %}
+ <script src="{% static 'js/character_div_background.js' %}"></script>
+
 <link rel="stylesheet" type="text/css" href="{% static 'css/character_style.css' %}">
+            {% csrf_token %}
 
     <style>
         .secluded-box {
@@ -25,11 +28,11 @@ Characters
 
     <div class="category_container">
         <div class="category_box">
-            <img src="https://cdn.discordapp.com/attachments/1029639077110235166/1208057511090065439/115921253_p0.png?ex=65e1e63b&is=65cf713b&hm=32ed619c813c8a3545cafb3fc09df234ba1bc0039639229bbdc9b234822a054a&" alt="Video Games">
+            <img src="{% static 'images/privaty.png' %}" alt="Video Games">
             <a href="/characters/game">Video Game Characters</a>
         </div>
         <div class="category_box">
-            <img src="http://localhost:8000/proxy-image/https://cdn.donmai.us/original/3d/36/3d36f0f9477f602943d474810e88c40b.jpg/" alt="Anime">
+            <img src="{% static 'images/fern.jpg' %}" alt="Anime">
             <a href="/characters/anime">Anime Characters</a>
         </div>
     </div>
@@ -50,8 +53,6 @@ Characters
                     <a class="character_link" href="/named_characters/{{ character_name|lower }}">{{ processed_character_name }}</a>
                 </div>
             {% endfor %}
-        {% else %}
-            <p>No characters available for this category.</p>
         {% endif %}
     </div>
 
@@ -62,25 +63,6 @@ Characters
 {% endblock %}
 
 
-{% block secluded_box_content %}
-
-<div class="secluded-box">
-    <!-- Secluded box content -->
-    {% if side_box_images %}
-        <img src="{% url 'proxy_for_static_image' side_box_images.0.file_url %}" alt="Secluded Box Image">
-    {% endif %}
-    <p>Some text beneath the image</p>
-
-    <div class="image-inside_secluded_box" id="image-inside-secluded-box">
-        {% for image in side_box_images|slice:"1:" %}
-            {% if image.file_url|lower|slice:"-3:" == "png" or image.file_url|lower|slice:"-3:" == "jpg" %}
-                <img src="{% url 'proxy_image' image.file_url %}" alt="Image" class="lightbox-trigger">
-            {% endif %}
-        {% endfor %}
-    </div>
-</div>
-
-{% endblock %}
 
 {% block side_nav_buttons %}
         <a href="/">Home</a>

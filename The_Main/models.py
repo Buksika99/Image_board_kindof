@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.utils import timezone
+from django.core.validators import MinValueValidator
 
 # Create your models here.
 class To_Do_List(models.Model):
@@ -33,7 +34,11 @@ class Character(models.Model):
     name = models.CharField(max_length=100, unique=True)  # Ensure unique names
     category = models.CharField(max_length=50, choices=CATEGORY_CHOICES)
     trivia = models.TextField(blank=True)  # Allow trivia to be blank
-    age = models.PositiveIntegerField(null=True, blank=True)  # Allow age to be optional
+    age = models.PositiveIntegerField(
+        null=True,
+        blank=True,
+        validators=[MinValueValidator(1)]  # Ensure age is positive
+    )
     created_at = models.DateTimeField(auto_now_add=True)  # Track creation time
     updated_at = models.DateTimeField(auto_now=True)  # Track last update time
     ability = models.TextField(blank=True)
