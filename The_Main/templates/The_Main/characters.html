@@ -27,15 +27,15 @@ Characters
 
     <div class="category_container">
     {% if category != "game" and category != "anime" and category != "v-tuber" %}
-            <div class="category_box">
+            <div class="category_box" id="privaty">
                 <img src="{% static 'images/privaty.png' %}" alt="Video Games">
                 <a href="/characters/game">Video Game Characters</a>
             </div>
-            <div class="category_box">
+            <div class="category_box" id="fern">
                 <img src="{% static 'images/fern.jpg' %}" alt="Anime">
                 <a href="/characters/anime">Anime Characters</a>
             </div>
-            <div class="category_box">
+            <div class="category_box" id="bae">
                 <img src="{% static 'images/bae.jpg' %}" alt="V-Tubers">
                 <a href="/characters/v-tuber">V-Tubers</a>
             </div>
