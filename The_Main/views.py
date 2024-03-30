@@ -347,7 +347,8 @@ def fetch_character_names(category):
 def characters(request):
     # Determine category based on URL name
     url_name = request.resolver_match.url_name
-    category = 'anime' if url_name == 'anime_characters' else 'game' if url_name == 'game_characters' else None
+    print(f"{url_name} URL NAMEEEEEEEEEEEEEEEEE")
+    category = 'anime' if url_name == 'anime_characters' else 'game' if url_name == 'game_characters' else 'v-tuber' if url_name == 'v-tuber_characters' else None
     page_number = request.GET.get('page', 1)
 
     # Fetch character names based on category
@@ -375,7 +376,7 @@ def characters(request):
 
 
     # Define data specific to category
-    category_data = {'anime': "Anime Data Here", 'game': "Game Data Here"}.get(category, None)
+    category_data = {'anime': "Anime Data Here", 'game': "Game Data Here", 'v-tuber': 'V-Tuber Data Here'}.get(category, None)
 
     # Render the response
     return render(request, 'The_Main/characters.html', {

@@ -11,6 +11,11 @@ class GameCharacter(Character):
     class Meta:
         proxy = True
 
+class VtuberCharacter(Character):
+    class Meta:
+        proxy = True
+
+
 class AnimeCharacterAdmin(admin.ModelAdmin):
     list_display = ('id', 'name', 'trivia', 'age', 'eye_color', 'created_at', 'updated_at', 'order')
     list_display_links = ('name',)  # Make the 'name' field clickable
@@ -31,5 +36,17 @@ class GameCharacterAdmin(admin.ModelAdmin):
     def get_queryset(self, request):
         return super().get_queryset(request).filter(category='game')
 
+
+class VtuberCharacterAdmin(admin.ModelAdmin):
+    list_display = ('id', 'name', 'trivia', 'age', 'eye_color', 'created_at', 'updated_at', 'order')
+    list_display_links = ('name',)  # Make the 'name' field clickable
+    search_fields = ('name', 'trivia')
+    list_filter = ('age', 'eye_color')
+    list_editable = ('order',)
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).filter(category='v-tuber')
+
 admin.site.register(AnimeCharacter, AnimeCharacterAdmin)
 admin.site.register(GameCharacter, GameCharacterAdmin)
+admin.site.register(VtuberCharacter, VtuberCharacterAdmin)

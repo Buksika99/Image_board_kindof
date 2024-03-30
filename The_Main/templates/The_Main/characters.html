@@ -9,7 +9,7 @@ Characters
 {% block content %}
 
 {% load static %}
- <script src="{% static 'js/character_div_background.js' %}"></script>
+
 
 <link rel="stylesheet" type="text/css" href="{% static 'css/character_style.css' %}">
             {% csrf_token %}
@@ -24,19 +24,24 @@ Characters
         }
 
     </style>
-    {% if category != "game" and category != "anime" %}
 
     <div class="category_container">
-        <div class="category_box">
-            <img src="{% static 'images/privaty.png' %}" alt="Video Games">
-            <a href="/characters/game">Video Game Characters</a>
-        </div>
-        <div class="category_box">
-            <img src="{% static 'images/fern.jpg' %}" alt="Anime">
-            <a href="/characters/anime">Anime Characters</a>
-        </div>
-    </div>
+    {% if category != "game" and category != "anime" and category != "v-tuber" %}
+            <div class="category_box">
+                <img src="{% static 'images/privaty.png' %}" alt="Video Games">
+                <a href="/characters/game">Video Game Characters</a>
+            </div>
+            <div class="category_box">
+                <img src="{% static 'images/fern.jpg' %}" alt="Anime">
+                <a href="/characters/anime">Anime Characters</a>
+            </div>
+            <div class="category_box">
+                <img src="{% static 'images/bae.jpg' %}" alt="V-Tubers">
+                <a href="/characters/v-tuber">V-Tubers</a>
+            </div>
     {% endif %}
+    </div>
+
 
     <div class="category_container">
         {% if category == "game" %}
@@ -50,6 +55,13 @@ Characters
             {% for character_name, processed_character_name, file_name in character_links %}
                 <div class="category_box">
                     <img src="http://localhost:8000/proxy-image/{{ file_name }}" alt="Anime">
+                    <a class="character_link" href="/named_characters/{{ character_name|lower }}">{{ processed_character_name }}</a>
+                </div>
+            {% endfor %}
+        {% elif category == "v-tuber" %}
+            {% for character_name, processed_character_name, file_name in character_links %}
+                <div class="category_box">
+                    <img src="http://localhost:8000/proxy-image/{{ file_name }}" alt="V-Tuber">
                     <a class="character_link" href="/named_characters/{{ character_name|lower }}">{{ processed_character_name }}</a>
                 </div>
             {% endfor %}
@@ -82,7 +94,10 @@ Characters
 
 {% block form_thing %}
 
+ <script src="{% static 'js/character_div_background.js' %}"></script>
+
 {% endblock %}
+
 
 
 {#    Add href links to further categories#}

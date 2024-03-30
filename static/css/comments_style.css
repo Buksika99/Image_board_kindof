@@ -1,0 +1,120 @@
+.comment-section {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background-color: #f9f9f9;
+}
+
+.comment-section h2 {
+    font-size: 24px;
+    margin-bottom: 15px;
+}
+
+.comment-form {
+    margin-bottom: 20px;
+}
+
+.comment-form textarea:focus {
+    outline: none;
+    border-color: #007bff;
+}
+
+.comment-form button,
+#comment-post-button {
+    padding: 10px 20px;
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.comment-form button:hover,
+#comment-post-button:hover {
+    background-color: #0056b3;
+}
+
+.comment-list {
+    list-style-type: none;
+    position: relative;
+    background-color: #eee; /* Light grey background */
+    border-radius: 5px; /* Rounded corners */
+    padding: 10px; /* Add some padding */
+}
+
+.comment-list li {
+    margin-bottom: 15px;
+    display: flex; /* Use flexbox */
+    align-items: flex-start; /* Align items to the start of the cross axis */
+}
+
+.comment-list .comment-content {
+    flex: 1; /* Take up remaining space */
+    font-size: 18px; /* Increase font size */
+    color: #333; /* Change text color */
+}
+
+
+.comment-list .delete-form {
+    margin-left: 10px; /* Add some space between comment content and delete button */
+}
+
+.comment-list strong {
+    font-weight: bold;
+    color: #007bff; /* Blue color for usernames */
+    font-size: 20px; /* Increase font size */
+}
+
+.comment-list .comment-text {
+    font-size: 20px; /* Increase font size */
+    /* Add any additional styling here */
+}
+
+.comment-list p {
+    margin: 0;
+    font-size: 16px; /* Increase font size */
+}
+
+.comment-form label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+
+.comment-form textarea {
+    width: 300px; /* Set width to 300px */
+    height: 150px; /* Set height to 150px */
+    padding: 10px;
+    border: 1px solid green; /* Green outline */
+    border-radius: 5px;
+    resize: none;
+    font-family: Arial, sans-serif;
+    font-size: 16px;
+    line-height: 1.5;
+    margin-top: 10px;
+}
+
+.delete-form {
+    display: inline-block; /* Display form inline */
+}
+
+.delete-button {
+    padding: 5px 10px; /* Adjust padding */
+    background-color: #dc3545; /* Red color for delete button */
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.delete-button:hover {
+    background-color: #bd2130;
+}
+
+/* Increase font size for comments */
+.comment-list li .comment-content {
+    font-size: 18px; /* Increase font size */
+}

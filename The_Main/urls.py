@@ -8,6 +8,7 @@ urlpatterns = [
     path('create/', views.create_character, name='create_character'),
     path('delete_comment/<path:current_path>/<int:comment_id>/', views.delete_comment, name='delete_comment'),
     path("characters/anime", views.characters, name="anime_characters"),
+    path("characters/v-tuber", views.characters, name="v-tuber_characters"),
     path("characters/game", views.characters, name="game_characters"),
     path('logout/', views.logout_view, name='logout'),
     path('', views.index, name='index'),

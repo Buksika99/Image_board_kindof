@@ -30,6 +30,7 @@ class Character(models.Model):
     CATEGORY_CHOICES = [
         ('anime', 'Anime'),
         ('game', 'Game'),
+        ('v-tuber', 'V-Tuber'),
     ]
     name = models.CharField(max_length=100, unique=True)  # Ensure unique names
     category = models.CharField(max_length=50, choices=CATEGORY_CHOICES)
