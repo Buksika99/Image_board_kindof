@@ -37,7 +37,6 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
-    'whitenoise.runserver_nostatic',
     'django.contrib.staticfiles',
     'The_Main.apps.TheMainConfig',
     'register.apps.RegisterConfig',
@@ -48,7 +47,6 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -56,6 +54,12 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'corsheaders.middleware.CorsMiddleware',
 ]
+
+if not DEBUG:
+    MIDDLEWARE = MIDDLEWARE + ['whitenoise.middleware.WhiteNoiseMiddleware',]
+    INSTALLED_APPS = INSTALLED_APPS + ['whitenoise.runserver_nostatic',]
+else:
+    print("Debug = True")
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:8000",  # or the address where your Flask app runs
@@ -128,8 +132,21 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
 STATIC_URL = 'static/'
-STATIC_ROOT = BASE_DIR / 'static'
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
+
+if DEBUG == False:
+    STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
+    STATIC_ROOT = BASE_DIR / 'static'
+    WHITENOISE_AUTOREFRESH = True
+else:
+    STATICFILES_DIRS = [
+        BASE_DIR / "The_Main/static",
+    ]
+    STATICFILES_FINDERS = [
+        'django.contrib.staticfiles.finders.AppDirectoriesFinder',
+        # ...
+    ]
+
+
 
 
 # Default primary key field type
